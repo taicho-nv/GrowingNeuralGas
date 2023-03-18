@@ -80,21 +80,21 @@ class GrowingNeuralGas:
                 for u, v, attributes in self.network.edges(data=True, nbunch=[s_1]):
                     self.network.add_edge(u, v, age=attributes['age']+1)
                 # 4. add the squared distance between the observation and the nearest unit in input space
-                self.network.node[s_1]['error'] += spatial.distance.euclidean(observation, self.network.node[s_1]['vector'])**2
+                self.network.nodes[s_1]['error'] += spatial.distance.euclidean(observation, self.network.nodes[s_1]['vector'])**2
                 # 5 .move s_1 and its direct topological neighbors towards the observation by the fractions
                 #    e_b and e_n, respectively, of the total distance
                 update_w_s_1 = self.e_b * \
                     (np.subtract(observation,
-                                 self.network.node[s_1]['vector']))
-                self.network.node[s_1]['vector'] = np.add(
-                    self.network.node[s_1]['vector'], update_w_s_1)
+                                 self.network.nodes[s_1]['vector']))
+                self.network.nodes[s_1]['vector'] = np.add(
+                    self.network.nodes[s_1]['vector'], update_w_s_1)
 
                 for neighbor in self.network.neighbors(s_1):
                     update_w_s_n = self.e_n * \
                         (np.subtract(observation,
-                                     self.network.node[neighbor]['vector']))
-                    self.network.node[neighbor]['vector'] = np.add(
-                        self.network.node[neighbor]['vector'], update_w_s_n)
+                                     self.network.nodes[neighbor]['vector']))
+                    self.network.nodes[neighbor]['vector'] = np.add(
+                        self.network.nodes[neighbor]['vector'], update_w_s_n)
                 # 6. if s_1 and s_2 are connected by an edge, set the age of this edge to zero
                 #    if such an edge doesn't exist, create it
                 self.network.add_edge(s_1, s_2, age=0)
@@ -111,17 +111,17 @@ class GrowingNeuralGas:
                     q = 0
                     error_max = 0
                     for u in self.network.nodes():
-                        if self.network.node[u]['error'] > error_max:
-                            error_max = self.network.node[u]['error']
+                        if self.network.nodes[u]['error'] > error_max:
+                            error_max = self.network.nodes[u]['error']
                             q = u
                     # 8.b insert a new unit r halfway between q and its neighbor f with the largest error variable
                     f = -1
                     largest_error = -1
                     for u in self.network.neighbors(q):
-                        if self.network.node[u]['error'] > largest_error:
-                            largest_error = self.network.node[u]['error']
+                        if self.network.nodes[u]['error'] > largest_error:
+                            largest_error = self.network.nodes[u]['error']
                             f = u
-                    w_r = 0.5 * (np.add(self.network.node[q]['vector'], self.network.node[f]['vector']))
+                    w_r = 0.5 * (np.add(self.network.nodes[q]['vector'], self.network.nodes[f]['vector']))
                     r = self.units_created
                     self.units_created += 1
                     # 8.c insert edges connecting the new unit r with q and f
@@ -132,19 +132,19 @@ class GrowingNeuralGas:
                     self.network.remove_edge(q, f)
                     # 8.d decrease the error variables of q and f by multiplying them with a
                     #     initialize the error variable of r with the new value of the error variable of q
-                    self.network.node[q]['error'] *= a
-                    self.network.node[f]['error'] *= a
-                    self.network.node[r]['error'] = self.network.node[q]['error']
+                    self.network.nodes[q]['error'] *= a
+                    self.network.nodes[f]['error'] *= a
+                    self.network.nodes[r]['error'] = self.network.nodes[q]['error']
                 # 9. decrease all error variables by multiplying them with a constant d
                 error = 0
                 for u in self.network.nodes():
-                    error += self.network.node[u]['error']
+                    error += self.network.nodes[u]['error']
                 accumulated_local_error.append(error)
                 network_order.append(self.network.order())
                 network_size.append(self.network.size())
                 total_units.append(self.units_created)
                 for u in self.network.nodes():
-                    self.network.node[u]['error'] *= d
+                    self.network.nodes[u]['error'] *= d
                     if self.network.degree(nbunch=[u]) == 0:
                         print(u)
             global_error.append(self.compute_global_error())
@@ -170,7 +170,7 @@ class GrowingNeuralGas:
         plt.scatter(self.data[:, 0], self.data[:, 1])
         node_pos = {}
         for u in self.network.nodes():
-            vector = self.network.node[u]['vector']
+            vector = self.network.nodes[u]['vector']
             node_pos[u] = (vector[0], vector[1])
         nx.draw(self.network, pos=node_pos)
         plt.draw()
@@ -219,7 +219,7 @@ class GrowingNeuralGas:
         for observation in self.data:
             nearest_units = self.find_nearest_units(observation)
             s_1 = nearest_units[0]
-            global_error += spatial.distance.euclidean(observation, self.network.node[s_1]['vector'])**2
+            global_error += spatial.distance.euclidean(observation, self.network.nodes[s_1]['vector'])**2
         return global_error
 
 
