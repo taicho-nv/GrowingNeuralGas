@@ -57,6 +57,8 @@ class GrowingNeuralGas:
         network_size = []
         total_units = []
         self.units_created = 0
+        self.e_b = e_b
+        self.e_n = e_n
         # 0. start with two units a and b at random position w_a and w_b
         w_a = [np.random.uniform(-2, 2) for _ in range(np.shape(self.data)[1])]
         w_b = [np.random.uniform(-2, 2) for _ in range(np.shape(self.data)[1])]
